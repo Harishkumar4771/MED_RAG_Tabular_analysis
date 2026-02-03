@@ -1,2 +1,2 @@
-Project will be restarted again
+The project is currently ongoing
 
