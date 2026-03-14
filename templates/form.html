@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Med RAG Tabular Analysis - Prediction</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--secondary-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+        }
+
+        h1 { color: var(--primary-color); margin: 0; }
+        h3 { color: var(--secondary-color); border-left: 4px solid var(--secondary-color); padding-left: 10px; margin-top: 25px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .predict-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .predict-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div style="text-align: left; margin-bottom: 10px;">
+            <a href="/" style="color: var(--secondary-color); text-decoration: none; font-weight: 600;">&larr; Back to Home</a>
+        </div>
+        <h1>Med RAG Tabular Analysis</h1>
+        <p>DISCLAIMER:The prediction results maybe incorrect! Please diagnose manually for confirmation</p>
+        <p>Enter patient data to predict hospital readmission risk</p>
+    </header>
+
+    <form id="predictionForm" action="/predict" method="POST">
+        <h3>Patient Demographics</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="age">Age Group</label>
+                <select id="age" name="age" required>
+                    <option value="[40-50)">40-50</option>
+                    <option value="[50-60)">50-60</option>
+                    <option value="[60-70)">60-70</option>
+                    <option value="[70-80)">70-80</option>
+                    <option value="[80-90)">80-90</option>
+                    <option value="[90-100)">90-100</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="medical_specialty">Medical Specialty</label>
+                <select id="medical_specialty" name="medical_specialty">
+                    <option value="Missing">Missing/Unknown</option>
+                    <option value="InternalMedicine">Internal Medicine</option>
+                    <option value="Family/GeneralPractice">Family Practice</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Surgery">Surgery</option>
+                    <option value="Emergency/Trauma">Emergency/Trauma</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <h3>Hospital Visit Metrics</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="time_in_hospital">Time in Hospital (Days)</label>
+                <input type="number" id="time_in_hospital" name="time_in_hospital" min="1" max="14" required>
+            </div>
+            <div class="form-group">
+                <label for="n_lab_procedures">No. Lab Procedures</label>
+                <input type="number" id="n_lab_procedures" name="n_lab_procedures" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="n_procedures">No. Procedures (Non-lab)</label>
+                <input type="number" id="n_procedures" name="n_procedures" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="n_medications">No. Medications</label>
+                <input type="number" id="n_medications" name="n_medications" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="n_outpatient">Outpatient Visits (Prior Year)</label>
+                <input type="number" id="n_outpatient" name="n_outpatient" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="n_inpatient">Inpatient Visits (Prior Year)</label>
+                <input type="number" id="n_inpatient" name="n_inpatient" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="n_emergency">Emergency Visits (Prior Year)</label>
+                <input type="number" id="n_emergency" name="n_emergency" min="0" required>
+            </div>
+        </div>
+
+        <h3>Clinical Details & Labs</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="diag_1">Primary Diagnosis (Diag 1)</label>
+                <select id="diag_1" name="diag_1">
+                    <option value="Circulatory">Circulatory</option>
+                    <option value="Respiratory">Respiratory</option>
+                    <option value="Digestive">Digestive</option>
+                    <option value="Diabetes">Diabetes</option>
+                    <option value="Injury">Injury</option>
+                    <option value="Musculoskeletal">Musculoskeletal</option>
+                    <option value="Missing">Missing</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="diag_2">Secondary Diagnosis (Diag 2)</label>
+                <select id="diag_2" name="diag_2">
+                    <option value="Circulatory">Circulatory</option>
+                    <option value="Respiratory">Respiratory</option>
+                    <option value="Digestive">Digestive</option>
+                    <option value="Diabetes">Diabetes</option>
+                    <option value="Injury">Injury</option>
+                    <option value="Musculoskeletal">Musculoskeletal</option>
+                    <option value="Missing">Missing</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="diag_3">Additional Diagnosis (Diag 3)</label>
+                <select id="diag_3" name="diag_3">
+                    <option value="Circulatory">Circulatory</option>
+                    <option value="Respiratory">Respiratory</option>
+                    <option value="Digestive">Digestive</option>
+                    <option value="Diabetes">Diabetes</option>
+                    <option value="Injury">Injury</option>
+                    <option value="Musculoskeletal">Musculoskeletal</option>
+                    <option value="Missing">Missing</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="glucose_test">Glucose Test Result</label>
+                <select id="glucose_test" name="glucose_test">
+                    <option value="no">Not Performed</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="A1Ctest">A1C Test Result</label>
+                <select id="A1Ctest" name="A1Ctest">
+                    <option value="no">Not Performed</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="change">Medication Change</label>
+                <select id="change" name="change">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="diabetes_med">Diabetes Medication Prescribed</label>
+                <select id="diabetes_med" name="diabetes_med">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button type="submit" class="predict-btn">Analyze Readmission Risk</button>
+        </div>
+    </form>
+
+    <div class="footer">
+        Powered by Med RAG Tabular Analysis Engine
+    </div>
+</div>
+
+
+
+
+
+</body>
+</html>

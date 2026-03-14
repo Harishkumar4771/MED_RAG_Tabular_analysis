@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readmission Prediction Result</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, #f5faff 0%, #e3e9f7 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .main-wrapper {
+            display: flex;
+            max-width: 1000px;
+            margin: 40px auto;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .container {
+            flex: 1.5;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(52, 144, 226, 0.12);
+            padding: 32px 28px 24px 28px;
+            text-align: center;
+        }
+        .chart-panel {
+            flex: 1;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(52, 144, 226, 0.12);
+            padding: 24px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            margin-bottom: 18px;
+        }
+        h2 { font-size: 1.4rem; border-bottom: 2px solid #4A90E2; padding-bottom: 10px; }
+        .result-box {
+            border: 2px solid #4A90E2;
+            background: #eaf6ff;
+            border-radius: 10px;
+            padding: 22px 18px;
+            margin-bottom: 28px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2176ae;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.07);
+        }
+        .ai-summary-box {
+            border: 1.5px dashed #7b9acc;
+            background: #f5faff;
+            border-radius: 8px;
+            padding: 18px 14px;
+            margin-bottom: 24px;
+            color: #333;
+            text-align: left;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 10px 28px;
+            background: #4A90E2;
+            color: #fff;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .back-link:hover {
+            background: #2176ae;
+        }
+
+        /* Range Chart Styles */
+        .range-container {
+            margin-bottom: 30px;
+        }
+        .range-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        .range-bar {
+            height: 24px;
+            width: 100%;
+            background: #eee;
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        .segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: white;
+            font-weight: bold;
+        }
+        .low { background: #ffccbc; flex: 1; color: #d84315; }
+        .normal { background: #c8e6c9; flex: 1; color: #2e7d32; }
+        .high { background: #ffcdd2; flex: 1; color: #c62828; }
+        
+        .marker {
+            position: absolute;
+            top: -5px;
+            width: 4px;
+            height: 34px;
+            background: #333;
+            z-index: 10;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+        }
+        .marker-label {
+            position: absolute;
+            top: -25px;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            background: #333;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="container">
+            <h1>Readmission Prediction Result</h1>
+            <div class="result-box" id="readmission-result">
+                <p>
+                    {% if prediction == 1 %}
+                        The patient will be <strong>readmitted</strong>.
+                    {% else %}
+                        The patient will <strong>not</strong> be readmitted.
+                    {% endif %}
+                    {% if probability is not none %}
+                        <br>Prediction confidence: {{ (probability * 100) | round(2) }}%
+                    {% endif %}
+                </p>
+            </div>
+            <!-- Disclaimer Box -->
+            <div style="margin: 24px auto 0 auto; padding: 18px 24px; border: 2px solid #e57373; background: #fff3e0; border-radius: 10px; color: #b71c1c; font-size: 1.05em; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <strong>Disclaimer:</strong> This prediction is generated by an AI model based on the information provided. It is not a substitute for professional medical advice, diagnosis, or treatment.
+            </div>
+            <div class="ai-summary-box">
+                <strong>AI Summary:</strong>
+                <p id="ai-summary">Your AI-generated summary will appear here.</p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <a href="/form" class="back-link">New Prediction</a>
+                <a href="/" class="back-link" style="background: #2c3e50;">Back to Home</a>
+            </div>
+        </div>
+
+        <div class="chart-panel">
+            <h2>Health Metrics Ranges</h2>
+            
+            <div class="range-container">
+                <div class="range-label">
+                    <span>Glucose Test</span>
+                    <span style="color: #4A90E2;">{{ glucose_test | capitalize if glucose_test != 'no' else 'Not Performed' }}</span>
+                </div>
+                <div class="range-bar">
+                    <div class="segment low">Low</div>
+                    <div class="segment normal">Normal</div>
+                    <div class="segment high">High</div>
+                    {% if glucose_test == 'normal' %}
+                        <div class="marker" style="left: 50%;">
+                            <div class="marker-label">Patient</div>
+                        </div>
+                    {% elif glucose_test == 'high' %}
+                        <div class="marker" style="left: 83.3%;">
+                            <div class="marker-label">Patient</div>
+                        </div>
+                    {% endif %}
+                </div>
+                <p style="font-size: 0.8rem; color: #777; margin-top: 5px;">
+                    Normal: 70-140 mg/dL | High: >140 mg/dL
+                </p>
+            </div>
+
+            <div class="range-container">
+                <div class="range-label">
+                    <span>A1C Test</span>
+                    <span style="color: #4A90E2;">{{ A1Ctest | capitalize if A1Ctest != 'no' else 'Not Performed' }}</span>
+                </div>
+                <div class="range-bar">
+                    <div class="segment low">Low</div>
+                    <div class="segment normal">Normal</div>
+                    <div class="segment high">High</div>
+                    {% if A1Ctest == 'normal' %}
+                        <div class="marker" style="left: 50%;">
+                            <div class="marker-label">Patient</div>
+                        </div>
+                    {% elif A1Ctest == 'high' %}
+                        <div class="marker" style="left: 83.3%;">
+                            <div class="marker-label">Patient</div>
+                        </div>
+                    {% endif %}
+                </div>
+                <p style="font-size: 0.8rem; color: #777; margin-top: 5px;">
+                    Normal: < 5.7% | Pre/High: >= 5.7%
+                </p>
+            </div>
+
+            <div style="font-size: 0.85rem; color: #555; background: #f9f9f9; padding: 12px; border-radius: 8px; border-left: 4px solid #4A90E2;">
+                <strong>Note:</strong> Ranges are approximate and may vary based on clinical context. "Not Performed" indicates no test result was recorded.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

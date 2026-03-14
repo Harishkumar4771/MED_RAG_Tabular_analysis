@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedPredict - Hospital Readmission Analytics</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --white: #ffffff;
+            --text-muted: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--white);
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--primary-color);
+            margin-left: 30px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--secondary-color);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            color: var(--white);
+            padding: 120px 20px;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0% 100%);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        .cta-btn {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            padding: 16px 45px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            animation: fadeInUp 1s ease-out 1s both;
+        }
+
+        .cta-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-top: 80px;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+            padding-bottom: 15px;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--secondary-color);
+            border-radius: 2px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 0 40px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+        }
+
+        .how-it-works {
+            background-color: #edf2f7;
+            padding: 80px 40px;
+        }
+
+        .steps {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .step-num {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .footer-links {
+            margin-bottom: 30px;
+        }
+
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--white);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+            .step { flex-direction: column; text-align: center; }
+            header { padding: 20px; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <span class="logo-icon">✚</span> MedPredict
+        </a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/form">Predictor</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <h1>Smarter Patient Care</h1>
+        <p>Harness the power of AI to predict hospital readmission risks. Our advanced ensemble models help healthcare providers intervene early and improve patient recovery paths.</p>
+        <a href="/form" class="cta-btn">Access Predictor</a>
+    </div>
+
+    <div class="section-title">
+        <h2>Key Features</h2>
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <span class="feature-icon">📊</span>
+            <h3>Ensemble Intelligence</h3>
+            <p>Utilizes a sophisticated blend of Logistic Regression, Random Forest, and XGBoost to ensure maximum prediction accuracy and reliability.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🩺</span>
+            <h3>Clinical Precision</h3>
+            <p>Analyzes over 20+ clinical parameters including lab results, medications, and patient history to build a comprehensive risk profile.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">💡</span>
+            <h3>Actionable Output</h3>
+            <p>Provides clear risk scores and visual health metric charts to support clinical decision-making and patient counseling.</p>
+        </div>
+    </div>
+
+    <div class="how-it-works">
+        <div class="section-title" style="margin-top: 0;">
+            <h2>How It Works</h2>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                    <h3>Enter Patient Data</h3>
+                    <p>Input patient demographics, admission details, and clinical test results into our secure, intuitive interface.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                    <h3>AI Analysis</h3>
+                    <p>Our model processes the data through a weighted ensemble of machine learning algorithms trained on thousands of records.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                    <h3>Review Insights</h3>
+                    <p>Get an immediate readmission probability and see how the patient's metrics compare to clinical benchmarks.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/form">Predictor</a>
+        </div>
+        <p>&copy; 2026 MedPredict Analytics System. Designed for clinical decision support.</p>
+        <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 10px;">Disclaimer: This tool is for educational/research purposes and should not replace professional medical judgment.</p>
+    </div>
+</body>
+</html>
